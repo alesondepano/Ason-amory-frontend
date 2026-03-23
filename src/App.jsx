@@ -16,25 +16,25 @@ import Policies from './pages/Policies';
 import Contact from './pages/Contact';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
-import Wishlist from './pages/Wishlist';  // ✅ Imported
+import Wishlist from './pages/Wishlist';  
 
 // ✅ Context Providers
 import { CartProvider } from './context/CartContext';
-import { WishlistProvider } from './context/WishlistContext';  // ✅ Add if using wishlist
-import { ThemeProvider } from './context/ThemeContext';        // ✅ Add if using dark mode
+import { WishlistProvider } from './context/WishlistContext';  
+import { ThemeProvider } from './context/ThemeContext';        
 
 function App() {
   return (
     <Router>
-      {/* ✅ Wrap with ALL context providers (order matters!) */}
+      {/* ✅ Context providers wrap the app */}
       <CartProvider>
         <WishlistProvider>
           <ThemeProvider>
-            {/* Layout Structure */}
+            {/* ✅ Header + Navbar */}
             <Header />
             <Navbar />
             
-            {/* Main Content Area */}
+            {/* ✅ Main Content */}
             <main className="main-content">
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -45,13 +45,14 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
-                <Route path="/wishlist" element={<Wishlist />} />  {/* ✅ Add this route */}
+                <Route path="/wishlist" element={<Wishlist />} />  
               </Routes>
             </main>
             
-            {/* Bottom Navigation - Mobile Only */}
+            {/* ✅ Bottom nav (mobile) */}
             <BottomNavbar />
             
+            {/* ✅ Footer */}
             <Footer />
           </ThemeProvider>
         </WishlistProvider>
