@@ -39,19 +39,33 @@ const Home = () => {
       try {
         setLoading(true);
         setError(null);
-        
-      
-        const RAW_URL = import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com";
+
+        const RAW_URL =
+          import.meta.env.VITE_API_URL ||
+          "https://ason-armory-backend.onrender.com";
+
         const API_URL = RAW_URL.trim().replace(/\/$/, "");
-        
+
+        // ✅ FIX: actually fetch data
+        const res = await fetch(`${API_URL}/products`);
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        
+
         const data = await res.json();
+
+        // ✅ Safety check
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid API response");
+        }
+
         setProducts(data.slice(0, 4));
       } catch (err) {
-        console.warn("⚠️ Backend not available, using fallback data:", err.message);
+        console.warn(
+          "⚠️ Backend not available, using fallback data:",
+          err.message
+        );
         setError("Using demo data (backend not connected)");
         setProducts(FALLBACK_PRODUCTS.slice(0, 4));
       } finally {
@@ -64,69 +78,31 @@ const Home = () => {
 
   return (
     <>
-      {/* Hero Section - Carousel */}
+      {/* Hero Section */}
       <section className="home-hero">
         <div className="container">
           <div id="carouselExampleCaptions" className="carousel slide" data-bs-ride="carousel">
-            <div className="carousel-indicators">
-              <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
-              <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
-              <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
-              <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="3" aria-label="Slide 4"></button>
-              <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="4" aria-label="Slide 5"></button>
-            </div>
-
+            
             <div className="carousel-inner">
-              <div className="carousel-item active">
-                <img src={banner1} className="d-block w-100 banner-img" alt="Premium tactical gear collection" loading="lazy" />
-                <div className="carousel-caption d-none d-md-block">
-                  <img src={logo} alt="Ason Armory Logo" className="banner-logo" loading="lazy" />
-                  <p>Quality Gear. Trusted Performance.</p>
+              {[banner1, banner2, banner3, banner4, banner5].map((banner, index) => (
+                <div className={`carousel-item ${index === 0 ? "active" : ""}`} key={index}>
+                  <img src={banner} className="d-block w-100 banner-img" alt="Banner" />
+                  <div className="carousel-caption d-none d-md-block">
+                    <img src={logo} alt="Logo" className="banner-logo" />
+                    <p>Quality Gear. Trusted Performance.</p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="carousel-item">
-                <img src={banner2} className="d-block w-100 banner-img" alt="Tactical vests showcase" loading="lazy" />
-                <div className="carousel-caption d-none d-md-block">
-                  <img src={logo} alt="Ason Armory Logo" className="banner-logo" loading="lazy" />
-                  <p>Premium Tactical Vests</p>
-                </div>
-              </div>
-
-              <div className="carousel-item">
-                <img src={banner3} className="d-block w-100 banner-img" alt="Action-ready equipment" loading="lazy" />
-                <div className="carousel-caption d-none d-md-block">
-                  <img src={logo} alt="Ason Armory Logo" className="banner-logo" loading="lazy" />
-                  <p>Built for Action</p>
-                </div>
-              </div>
-
-              <div className="carousel-item">
-                <img src={banner4} className="d-block w-100 banner-img" alt="Precision equipment display" loading="lazy" />
-                <div className="carousel-caption d-none d-md-block">
-                  <img src={logo} alt="Ason Armory Logo" className="banner-logo" loading="lazy" />
-                  <p>Precision Equipment</p>
-                </div>
-              </div>
-
-              <div className="carousel-item">
-                <img src={banner5} className="d-block w-100 banner-img" alt="Complete your loadout" loading="lazy" />
-                <div className="carousel-caption d-none d-md-block">
-                  <img src={logo} alt="Ason Armory Logo" className="banner-logo" loading="lazy" />
-                  <p>Complete Your Loadout</p>
-                </div>
-              </div>
+              ))}
             </div>
 
             <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-              <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span className="visually-hidden">Previous</span>
+              <span className="carousel-control-prev-icon"></span>
             </button>
 
             <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-              <span className="carousel-control-next-icon" aria-hidden="true"></span>
-              <span className="visually-hidden">Next</span>
+              <span className="carousel-control-next-icon"></span>
             </button>
+
           </div>
         </div>
       </section>
@@ -134,31 +110,32 @@ const Home = () => {
       {/* Products Section */}
       <section className="home-products">
         <div className="container">
+
           <div className="products-title-banner">
             <h2 className="section-title">
               Featured <span className="text-gold">Products</span>
             </h2>
-            
+
             <Link to="/products" className="btn-view-more">
               View More Products
             </Link>
           </div>
 
+          {/* Loading */}
           {loading && (
             <div className="text-center py-4">
-              <div className="spinner-border text-gold" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
+              <div className="spinner-border text-gold"></div>
             </div>
           )}
 
+          {/* Error */}
           {error && !loading && (
-            <div className="alert alert-warning text-center mb-3">
-              <i className="fas fa-exclamation-triangle me-2"></i>
+            <div className="alert alert-warning text-center">
               {error}
             </div>
           )}
 
+          {/* Products */}
           {!loading && products.length > 0 && (
             <div className="row g-3 g-md-4">
               {products.map(product => (
@@ -169,11 +146,13 @@ const Home = () => {
             </div>
           )}
 
+          {/* Empty */}
           {!loading && products.length === 0 && (
-            <div className="col-12 text-center text-muted py-4">
-              <p>No products available at the moment.</p>
+            <div className="text-center text-muted py-4">
+              No products available.
             </div>
           )}
+
         </div>
       </section>
     </>

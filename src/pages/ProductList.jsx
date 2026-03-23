@@ -28,12 +28,13 @@ const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("");
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const searchQuery = searchParams.get("search")?.toLowerCase() || "";
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search")?.toLowerCase() || "";
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -47,9 +48,8 @@ const ProductList = () => {
 
         const API_URL = RAW_URL.trim().replace(/\/$/, "");
 
-        console.log("🔍 Fetching from:", `${API_URL}/api/products`);
-
-        const res = await fetch(`${API_URL}/api/products`);
+        // ✅ FIX: match Home endpoint
+        const res = await fetch(`${API_URL}/products`);
 
         if (!res.ok) {
           throw new Error(`Server error: ${res.status}`);
@@ -74,10 +74,12 @@ const ProductList = () => {
     fetchProducts();
   }, []);
 
+  // ✅ categories
   const categories = ["All", ...new Set(products.map((p) => p.category))];
 
-  const sortProducts = (products, sortBy) => {
-    const sorted = [...products];
+  // ✅ sorting
+  const sortProducts = (list) => {
+    const sorted = [...list];
 
     switch (sortBy) {
       case "price-low":
@@ -93,34 +95,27 @@ const ProductList = () => {
     }
   };
 
-  const getFilteredProducts = () => {
-    let result = [...products];
+  // ✅ filtering
+  const filteredProducts = sortProducts(
+    products.filter((p) => {
+      const matchCategory =
+        selectedCategory === "All" || p.category === selectedCategory;
 
-    if (selectedCategory !== "All") {
-      result = result.filter((p) => p.category === selectedCategory);
-    }
+      const matchSearch =
+        p.name.toLowerCase().includes(searchQuery) ||
+        p.category.toLowerCase().includes(searchQuery);
 
-    if (searchQuery) {
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery) ||
-          p.category.toLowerCase().includes(searchQuery)
-      );
-    }
+      const matchMin =
+        !priceRange.min || p.price >= Number(priceRange.min);
 
-    if (priceRange.min) {
-      result = result.filter((p) => p.price >= Number(priceRange.min));
-    }
+      const matchMax =
+        !priceRange.max || p.price <= Number(priceRange.max);
 
-    if (priceRange.max) {
-      result = result.filter((p) => p.price <= Number(priceRange.max));
-    }
+      return matchCategory && matchSearch && matchMin && matchMax;
+    })
+  );
 
-    return sortBy ? sortProducts(result, sortBy) : result;
-  };
-
-  const filteredProducts = getFilteredProducts();
-
+  // handlers
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchParams(query ? { search: query } : {});
@@ -138,6 +133,7 @@ const ProductList = () => {
     setSearchParams({});
   };
 
+  // loading
   if (loading) {
     return (
       <div className="text-center py-5">
@@ -149,7 +145,7 @@ const ProductList = () => {
 
   return (
     <>
-      {/* ✅ FIXED: Error now inside return */}
+      {/* ERROR */}
       {error && (
         <div className="alert alert-warning text-center">
           ⚠️ {error}
@@ -174,6 +170,7 @@ const ProductList = () => {
       <section className="products-content">
         <div className="container">
           <div className="row">
+
             {/* SIDEBAR */}
             <div className="col-lg-3">
               <Sidebar
@@ -229,19 +226,24 @@ const ProductList = () => {
                   <option value="">Sort</option>
                   <option value="price-low">Low to High</option>
                   <option value="price-high">High to Low</option>
+                  <option value="name-asc">A-Z</option>
+                  <option value="name-desc">Z-A</option>
                 </select>
               </div>
 
-              <div className="row">
+              <div className="row g-3">
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((p) => (
-                    <ProductCard key={p.id} product={p} />
+                    <div className="col-lg-4 col-md-6" key={p.id}>
+                      <ProductCard product={p} />
+                    </div>
                   ))
                 ) : (
                   <h4 className="text-center">No products found</h4>
                 )}
               </div>
             </div>
+
           </div>
         </div>
       </section>
