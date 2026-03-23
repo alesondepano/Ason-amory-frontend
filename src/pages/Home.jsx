@@ -32,14 +32,10 @@ const FALLBACK_PRODUCTS = [
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
         const API_URL =
           (import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com").replace(/\/$/, "");
 
@@ -51,8 +47,8 @@ const Home = () => {
 
         setProducts(data.slice(0, 4));
       } catch (err) {
-        console.warn("⚠️ Backend not available, using fallback data:", err.message);
-        setError("Using demo data (backend not connected)");
+        // 🤫 Silently fall back to demo data - no error message shown to user
+        console.log("ℹ️ Using fallback products (backend unavailable)");
         setProducts(FALLBACK_PRODUCTS.slice(0, 4));
       } finally {
         setLoading(false);
@@ -97,16 +93,20 @@ const Home = () => {
             <Link to="/products" className="btn-view-more">View More Products</Link>
           </div>
 
-          {/* Loading */}
-          {loading && <div className="text-center py-4"><div className="spinner-border text-gold"></div></div>}
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-5">
+              <div className="spinner-border text-gold" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="mt-2 text-muted">Loading featured products...</p>
+            </div>
+          )}
 
-          {/* Error */}
-          {error && !loading && <div className="alert alert-warning text-center">{error}</div>}
-
-          {/* Products */}
+          {/* Products Grid - Always renders when not loading (API or fallback) */}
           {!loading && products.length > 0 && (
             <div className="row g-3 g-md-4">
-              {products.map(product => (
+              {products.map((product) => (
                 <div className="col-lg-3 col-md-4 col-sm-6" key={product.id}>
                   <ProductCard product={product} />
                 </div>
@@ -114,8 +114,13 @@ const Home = () => {
             </div>
           )}
 
-          {/* Empty */}
-          {!loading && products.length === 0 && <div className="text-center text-muted py-4">No products available.</div>}
+          {/* Empty State (rare edge case) */}
+          {!loading && products.length === 0 && (
+            <div className="text-center text-muted py-5">
+              <p>No products available at the moment.</p>
+              <Link to="/products" className="btn btn-outline-gold mt-2">Browse All Products</Link>
+            </div>
+          )}
         </div>
       </section>
     </>
