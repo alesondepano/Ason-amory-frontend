@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import banner1 from "../assets/banner1.png";
 import banner2 from "../assets/banner2.png";
@@ -8,7 +8,7 @@ import banner4 from "../assets/banner4.png";
 import banner5 from "../assets/banner5.png";
 import logo from "../assets/logo.png";
 
-// ✅ Fallback products (if API fails)
+// ✅ Fallback products
 import product1 from "../assets/22lr-ammo-100.jpg";
 import product7 from "../assets/Airsoft BB Pellets (0.25g – 4000 pcs).jpg";
 import product11 from "../assets/Ason Armory Branded Cap.jpg";
@@ -40,32 +40,18 @@ const Home = () => {
         setLoading(true);
         setError(null);
 
-        const RAW_URL =
-          import.meta.env.VITE_API_URL ||
-          "https://ason-armory-backend.onrender.com";
+        const API_URL =
+          (import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com").replace(/\/$/, "");
 
-        const API_URL = RAW_URL.trim().replace(/\/$/, "");
-
-        // ✅ FIX: actually fetch data
         const res = await fetch(`${API_URL}/products`);
-
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
         const data = await res.json();
-
-        // ✅ Safety check
-        if (!Array.isArray(data)) {
-          throw new Error("Invalid API response");
-        }
+        if (!Array.isArray(data)) throw new Error("Invalid API response");
 
         setProducts(data.slice(0, 4));
       } catch (err) {
-        console.warn(
-          "⚠️ Backend not available, using fallback data:",
-          err.message
-        );
+        console.warn("⚠️ Backend not available, using fallback data:", err.message);
         setError("Using demo data (backend not connected)");
         setProducts(FALLBACK_PRODUCTS.slice(0, 4));
       } finally {
@@ -78,11 +64,10 @@ const Home = () => {
 
   return (
     <>
-      {/* Hero Section */}
+      {/* Hero Carousel */}
       <section className="home-hero">
         <div className="container">
           <div id="carouselExampleCaptions" className="carousel slide" data-bs-ride="carousel">
-            
             <div className="carousel-inner">
               {[banner1, banner2, banner3, banner4, banner5].map((banner, index) => (
                 <div className={`carousel-item ${index === 0 ? "active" : ""}`} key={index}>
@@ -94,15 +79,12 @@ const Home = () => {
                 </div>
               ))}
             </div>
-
             <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
               <span className="carousel-control-prev-icon"></span>
             </button>
-
             <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
               <span className="carousel-control-next-icon"></span>
             </button>
-
           </div>
         </div>
       </section>
@@ -110,30 +92,16 @@ const Home = () => {
       {/* Products Section */}
       <section className="home-products">
         <div className="container">
-
           <div className="products-title-banner">
-            <h2 className="section-title">
-              Featured <span className="text-gold">Products</span>
-            </h2>
-
-            <Link to="/products" className="btn-view-more">
-              View More Products
-            </Link>
+            <h2 className="section-title">Featured <span className="text-gold">Products</span></h2>
+            <Link to="/products" className="btn-view-more">View More Products</Link>
           </div>
 
           {/* Loading */}
-          {loading && (
-            <div className="text-center py-4">
-              <div className="spinner-border text-gold"></div>
-            </div>
-          )}
+          {loading && <div className="text-center py-4"><div className="spinner-border text-gold"></div></div>}
 
           {/* Error */}
-          {error && !loading && (
-            <div className="alert alert-warning text-center">
-              {error}
-            </div>
-          )}
+          {error && !loading && <div className="alert alert-warning text-center">{error}</div>}
 
           {/* Products */}
           {!loading && products.length > 0 && (
@@ -147,12 +115,7 @@ const Home = () => {
           )}
 
           {/* Empty */}
-          {!loading && products.length === 0 && (
-            <div className="text-center text-muted py-4">
-              No products available.
-            </div>
-          )}
-
+          {!loading && products.length === 0 && <div className="text-center text-muted py-4">No products available.</div>}
         </div>
       </section>
     </>
