@@ -41,11 +41,9 @@ const ProductList = () => {
         setLoading(true);
         setError(null);
 
-        fetch('/api/products')
-        
-        // ✅ DEBUG LOG: See exact URL being fetched
-        console.log("🔍 Fetching from:", `${API_URL}/api/products`);
-
+        const RAW_URL = import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com";
+        const API_URL = RAW_URL.trim().replace(/\/$/, "");
+        console.log("🔍 Fetching from:", `${API_URL}/api/products`); // Debug log
         const res = await fetch(`${API_URL}/api/products`);
 
         if (!res.ok) {

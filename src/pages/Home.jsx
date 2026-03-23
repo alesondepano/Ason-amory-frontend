@@ -41,7 +41,8 @@ const Home = () => {
         setError(null);
         
       
-        fetch('/api/products')
+        const RAW_URL = import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com";
+        const API_URL = RAW_URL.trim().replace(/\/$/, "");
         
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
