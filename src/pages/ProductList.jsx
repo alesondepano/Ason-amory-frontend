@@ -8,13 +8,11 @@ const ProductList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortBy, setSortBy] = useState(""); // ✅ For sorting
-  const [searchParams, setSearchParams] = useSearchParams(); // ✅ For search
-  
-  // ✅ Get search query from URL
+  const [sortBy, setSortBy] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const searchQuery = searchParams.get("search")?.toLowerCase() || "";
-  
-  // ✅ Price filter state
+
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
 
   useEffect(() => {
@@ -22,18 +20,25 @@ const ProductList = () => {
       try {
         setLoading(true);
         setError(null);
-        
-        const res = await fetch('http://localhost:5000/api/products');
-        
+
+        const API_URL = import.meta.env.VITE_API_URL;
+
+        const res = await fetch(`${API_URL}/api/products`);
+
         if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+          throw new Error(`Server error: ${res.status}`);
         }
-        
+
         const data = await res.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid data format");
+        }
+
         setProducts(data);
       } catch (err) {
-        setError(err.message);
         console.error("API Fetch Error:", err);
+        setError("Failed to load products. Server might be waking up...");
       } finally {
         setLoading(false);
       }
@@ -42,47 +47,43 @@ const ProductList = () => {
     fetchProducts();
   }, []);
 
-  const categories = ["All", ...new Set(products.map(p => p.category))];
+  const categories = ["All", ...new Set(products.map((p) => p.category))];
 
-  // ✅ Filter & Sort Products
   const getFilteredAndSortedProducts = () => {
     let result = [...products];
-    
-    // ✅ Filter by category
+
     if (selectedCategory !== "All") {
-      result = result.filter(p => p.category === selectedCategory);
+      result = result.filter((p) => p.category === selectedCategory);
     }
-    
-    // ✅ Filter by search query (name, description, category)
+
     if (searchQuery) {
-      result = result.filter(p => 
-        p.name.toLowerCase().includes(searchQuery) ||
-        p.description?.toLowerCase().includes(searchQuery) ||
-        p.category.toLowerCase().includes(searchQuery)
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchQuery) ||
+          p.description?.toLowerCase().includes(searchQuery) ||
+          p.category.toLowerCase().includes(searchQuery)
       );
     }
-    
-    // ✅ Filter by price range
+
     if (priceRange.min) {
-      result = result.filter(p => p.price >= Number(priceRange.min));
+      result = result.filter((p) => p.price >= Number(priceRange.min));
     }
+
     if (priceRange.max) {
-      result = result.filter(p => p.price <= Number(priceRange.max));
+      result = result.filter((p) => p.price <= Number(priceRange.max));
     }
-    
-    // ✅ Sort products
+
     if (sortBy) {
       result = sortProducts(result, sortBy);
     }
-    
+
     return result;
   };
 
-  // ✅ Sort helper function
   const sortProducts = (products, sortBy) => {
     const sorted = [...products];
-    
-    switch(sortBy) {
+
+    switch (sortBy) {
       case "price-low":
         return sorted.sort((a, b) => a.price - b.price);
       case "price-high":
@@ -102,29 +103,24 @@ const ProductList = () => {
 
   const filteredProducts = getFilteredAndSortedProducts();
 
-  // ✅ Handle search input change
   const handleSearchChange = (e) => {
     const query = e.target.value;
     if (query.trim()) {
       setSearchParams({ search: query.trim() });
     } else {
-      setSearchParams({}); // Clear search param
+      setSearchParams({});
     }
   };
 
-  // ✅ Handle price filter change
   const handlePriceChange = (e) => {
     const { name, value } = e.target;
-    setPriceRange(prev => ({ ...prev, [name]: value }));
+    setPriceRange((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Apply price filter
   const applyPriceFilter = () => {
-    // Force re-render by updating state
     setPriceRange({ ...priceRange });
   };
 
-  // ✅ Reset all filters
   const resetFilters = () => {
     setSelectedCategory("All");
     setPriceRange({ min: "", max: "" });
@@ -134,11 +130,11 @@ const ProductList = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner-border text-gold" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <h3 className="mt-3">Loading products...</h3>
+      <div className="loading-container text-center py-5">
+        <div className="spinner-border text-gold" role="status"></div>
+        <h3 className="mt-3">
+          Loading products (first load may take a few seconds)...
+        </h3>
       </div>
     );
   }
@@ -148,9 +144,9 @@ const ProductList = () => {
       <div className="error-container">
         <div className="alert alert-danger text-center">
           <h4>Error Loading Products</h4>
-          <p className="mb-0">{error}</p>
-          <button 
-            className="btn btn-sm btn-outline-dark mt-2" 
+          <p>{error}</p>
+          <button
+            className="btn btn-sm btn-outline-dark"
             onClick={() => window.location.reload()}
           >
             Try Again
@@ -162,39 +158,39 @@ const ProductList = () => {
 
   return (
     <>
-      {/* Page Header */}
+      {/* HEADER */}
       <section className="products-header">
         <div className="container">
           <h1 className="products-title">
             All <span className="text-gold">Products</span>
           </h1>
           <p className="products-subtitle">
-            {searchQuery 
-              ? `Search results for "${searchQuery}"` 
+            {searchQuery
+              ? `Search results for "${searchQuery}"`
               : "Discover our premium collection"}
           </p>
         </div>
       </section>
 
-      {/* Products Content */}
       <section className="products-content">
         <div className="container">
           <div className="row">
-            {/* Sidebar */}
+            {/* SIDEBAR */}
             <div className="col-lg-3 col-md-4 mb-4">
               <Sidebar
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
               />
-              
-              {/* ✅ Price Filter in Sidebar */}
+
+              {/* PRICE FILTER */}
               <div className="sidebar-card mt-3">
                 <div className="sidebar-banner">
                   <h6 className="sidebar-title mb-0">
                     <i className="fas fa-tag me-2"></i>Price Range
                   </h6>
                 </div>
+
                 <div className="p-3">
                   <div className="d-flex gap-2 mb-2">
                     <input
@@ -204,7 +200,6 @@ const ProductList = () => {
                       placeholder="Min ₱"
                       value={priceRange.min}
                       onChange={handlePriceChange}
-                      min="0"
                     />
                     <input
                       type="number"
@@ -213,10 +208,10 @@ const ProductList = () => {
                       placeholder="Max ₱"
                       value={priceRange.max}
                       onChange={handlePriceChange}
-                      min="0"
                     />
                   </div>
-                  <button 
+
+                  <button
                     className="btn btn-sm btn-outline-gold w-100"
                     onClick={applyPriceFilter}
                   >
@@ -224,131 +219,59 @@ const ProductList = () => {
                   </button>
                 </div>
               </div>
-              
-              {/* ✅ Reset Filters Button */}
-              <button 
+
+              <button
                 className="btn btn-outline-secondary w-100 mt-3"
                 onClick={resetFilters}
               >
-                <i className="fas fa-undo me-1"></i> Reset All Filters
+                Reset All Filters
               </button>
             </div>
 
-            {/* Products Grid */}
+            {/* PRODUCTS */}
             <div className="col-lg-9 col-md-8">
-              {/* ✅ Search Bar + Sort + Results Info */}
+              {/* TOP BAR */}
               <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                {/* Search Input */}
-                <div className="search-box" style={{ width: "200px" }}>
-                  <input 
-                    className="form-control search-input" 
-                    type="search" 
-                    placeholder="Search products..." 
-                    aria-label="Search"
-                    value={searchQuery}
-                    onChange={handleSearchChange}
-                  />
-                  <button className="btn search-btn" type="button">
-                    <i className="fas fa-search"></i>
-                  </button>
-                </div>
-                
-                {/* Sort Dropdown */}
-                <div className="sort-dropdown d-flex align-items-center gap-2">
-                  <label className="small text-muted mb-0">Sort:</label>
-                  <select 
-                    className="form-select form-select-sm" 
-                    style={{ width: "auto", minWidth: "180px" }}
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                  >
-                    <option value="">Default</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="name-asc">Name: A to Z</option>
-                    <option value="name-desc">Name: Z to A</option>
-                    <option value="rating">Rating: High to Low</option>
-                    <option value="discount">Discount: High to Low</option>
-                  </select>
-                </div>
-                
-                {/* Results Count */}
-                <div className="results-info">
-                  <p className="mb-0 small">
-                    Showing <strong>{filteredProducts.length}</strong> of {products.length} products
-                    {searchQuery && <span> • Search: "{searchQuery}"</span>}
-                    {selectedCategory !== "All" && <span> • {selectedCategory}</span>}
-                    {(priceRange.min || priceRange.max) && <span> • Price filtered</span>}
-                  </p>
-                </div>
+                <input
+                  className="form-control"
+                  style={{ width: "200px" }}
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
+
+                <select
+                  className="form-select form-select-sm"
+                  style={{ width: "180px" }}
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="">Default</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="name-asc">Name: A-Z</option>
+                  <option value="name-desc">Name: Z-A</option>
+                </select>
+
+                <p className="mb-0 small">
+                  {filteredProducts.length} / {products.length} products
+                </p>
               </div>
 
-              {/* ✅ Active Filter Badges */}
-              {(searchQuery || selectedCategory !== "All" || sortBy || priceRange.min || priceRange.max) && (
-                <div className="active-filters mb-3">
-                  {searchQuery && (
-                    <span className="badge bg-secondary me-2">
-                      Search: "{searchQuery}"
-                      <button 
-                        className="btn-close btn-close-white ms-2 small"
-                        onClick={() => setSearchParams({})}
-                        aria-label="Clear search"
-                      ></button>
-                    </span>
-                  )}
-                  {selectedCategory !== "All" && (
-                    <span className="badge bg-secondary me-2">
-                      {selectedCategory}
-                      <button 
-                        className="btn-close btn-close-white ms-2 small"
-                        onClick={() => setSelectedCategory("All")}
-                        aria-label="Clear category"
-                      ></button>
-                    </span>
-                  )}
-                  {sortBy && (
-                    <span className="badge bg-secondary me-2">
-                      Sort: {sortBy.replace("-", " ")}
-                      <button 
-                        className="btn-close btn-close-white ms-2 small"
-                        onClick={() => setSortBy("")}
-                        aria-label="Clear sort"
-                      ></button>
-                    </span>
-                  )}
-                  {(priceRange.min || priceRange.max) && (
-                    <span className="badge bg-secondary me-2">
-                      Price: ₱{priceRange.min || 0} - ₱{priceRange.max || "∞"}
-                      <button 
-                        className="btn-close btn-close-white ms-2 small"
-                        onClick={() => setPriceRange({ min: "", max: "" })}
-                        aria-label="Clear price"
-                      ></button>
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Products Grid */}
-              <div className="products-grid">
+              {/* GRID */}
+              <div className="row">
                 {filteredProducts.length > 0 ? (
-                  filteredProducts.map(product => (
+                  filteredProducts.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))
                 ) : (
-                  <div className="col-12 text-center py-5">
-                    <i className="fas fa-search" style={{ fontSize: "3rem", color: "#ccc" }}></i>
-                    <h4 className="mt-3">No products found</h4>
-                    <p className="text-muted">
-                      {searchQuery 
-                        ? `Try different keywords or clear your search` 
-                        : "Try selecting a different category or price range"}
-                    </p>
-                    <button 
-                      className="btn btn-view-more"
+                  <div className="text-center py-5">
+                    <h4>No products found</h4>
+                    <button
+                      className="btn btn-warning mt-2"
                       onClick={resetFilters}
                     >
-                      Clear All Filters
+                      Clear Filters
                     </button>
                   </div>
                 )}

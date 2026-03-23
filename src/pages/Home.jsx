@@ -40,7 +40,8 @@ const Home = () => {
         setLoading(true);
         setError(null);
         
-        const res = await fetch('http://localhost:5000/api/products');
+        const API_URL = import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com";
+        const res = await fetch(`${API_URL}/api/products`);
         
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
