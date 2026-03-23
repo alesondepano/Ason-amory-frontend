@@ -41,10 +41,8 @@ const ProductList = () => {
         setLoading(true);
         setError(null);
 
-        // ✅ FIX #1: Trim + fallback URL to prevent trailing spaces
-        const RAW_URL = import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com";
-        const API_URL = RAW_URL.trim().replace(/\/$/, ""); // Remove trailing slash + spaces
-
+        fetch('/api/products')
+        
         // ✅ DEBUG LOG: See exact URL being fetched
         console.log("🔍 Fetching from:", `${API_URL}/api/products`);
 
