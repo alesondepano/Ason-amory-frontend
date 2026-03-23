@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import Sidebar from "../components/Sidebar";
 
-// ✅ Optional: Fallback products if API fails (same as Home.jsx)
+// ✅ Fallback products
 import product1 from "../assets/22lr-ammo-100.jpg";
 import product7 from "../assets/Airsoft BB Pellets (0.25g – 4000 pcs).jpg";
 import product11 from "../assets/Ason Armory Branded Cap.jpg";
@@ -41,9 +41,14 @@ const ProductList = () => {
         setLoading(true);
         setError(null);
 
-        const RAW_URL = import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com";
+        const RAW_URL =
+          import.meta.env.VITE_API_URL ||
+          "https://ason-armory-backend.onrender.com";
+
         const API_URL = RAW_URL.trim().replace(/\/$/, "");
-        console.log("🔍 Fetching from:", `${API_URL}/api/products`); // Debug log
+
+        console.log("🔍 Fetching from:", `${API_URL}/api/products`);
+
         const res = await fetch(`${API_URL}/api/products`);
 
         if (!res.ok) {
@@ -58,9 +63,8 @@ const ProductList = () => {
 
         setProducts(data);
       } catch (err) {
-        console.warn("⚠️ Backend not available, using fallback data:", err.message);
+        console.warn("⚠️ Backend not available:", err.message);
         setError("Using demo data (backend not connected)");
-        // ✅ FIX #2: Fallback to demo data like Home.jsx
         setProducts(FALLBACK_PRODUCTS);
       } finally {
         setLoading(false);
@@ -71,37 +75,6 @@ const ProductList = () => {
   }, []);
 
   const categories = ["All", ...new Set(products.map((p) => p.category))];
-
-  const getFilteredAndSortedProducts = () => {
-    let result = [...products];
-
-    if (selectedCategory !== "All") {
-      result = result.filter((p) => p.category === selectedCategory);
-    }
-
-    if (searchQuery) {
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery) ||
-          p.description?.toLowerCase().includes(searchQuery) ||
-          p.category.toLowerCase().includes(searchQuery)
-      );
-    }
-
-    if (priceRange.min) {
-      result = result.filter((p) => p.price >= Number(priceRange.min));
-    }
-
-    if (priceRange.max) {
-      result = result.filter((p) => p.price <= Number(priceRange.max));
-    }
-
-    if (sortBy) {
-      result = sortProducts(result, sortBy);
-    }
-
-    return result;
-  };
 
   const sortProducts = (products, sortBy) => {
     const sorted = [...products];
@@ -115,33 +88,47 @@ const ProductList = () => {
         return sorted.sort((a, b) => a.name.localeCompare(b.name));
       case "name-desc":
         return sorted.sort((a, b) => b.name.localeCompare(a.name));
-      case "rating":
-        return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      case "discount":
-        return sorted.sort((a, b) => (b.discount || 0) - (a.discount || 0));
       default:
         return sorted;
     }
   };
 
-  const filteredProducts = getFilteredAndSortedProducts();
+  const getFilteredProducts = () => {
+    let result = [...products];
+
+    if (selectedCategory !== "All") {
+      result = result.filter((p) => p.category === selectedCategory);
+    }
+
+    if (searchQuery) {
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchQuery) ||
+          p.category.toLowerCase().includes(searchQuery)
+      );
+    }
+
+    if (priceRange.min) {
+      result = result.filter((p) => p.price >= Number(priceRange.min));
+    }
+
+    if (priceRange.max) {
+      result = result.filter((p) => p.price <= Number(priceRange.max));
+    }
+
+    return sortBy ? sortProducts(result, sortBy) : result;
+  };
+
+  const filteredProducts = getFilteredProducts();
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
-    if (query.trim()) {
-      setSearchParams({ search: query.trim() });
-    } else {
-      setSearchParams({});
-    }
+    setSearchParams(query ? { search: query } : {});
   };
 
   const handlePriceChange = (e) => {
     const { name, value } = e.target;
     setPriceRange((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const applyPriceFilter = () => {
-    setPriceRange({ ...priceRange });
   };
 
   const resetFilters = () => {
@@ -153,99 +140,78 @@ const ProductList = () => {
 
   if (loading) {
     return (
-      <div className="loading-container text-center py-5">
-        <div className="spinner-border text-gold" role="status"></div>
-        <h3 className="mt-3">
-          Loading products (first load may take a few seconds)...
-        </h3>
+      <div className="text-center py-5">
+        <div className="spinner-border text-gold"></div>
+        <h3 className="mt-3">Loading products...</h3>
       </div>
     );
   }
 
-  {/* ✅ Show warning if using fallback data */}
-  {error && !loading && (
-    <div className="alert alert-warning text-center mb-3">
-      <i className="fas fa-exclamation-triangle me-2"></i>
-      {error}
-    </div>
-  )}
-
   return (
     <>
+      {/* ✅ FIXED: Error now inside return */}
+      {error && (
+        <div className="alert alert-warning text-center">
+          ⚠️ {error}
+        </div>
+      )}
+
       {/* HEADER */}
       <section className="products-header">
         <div className="container">
-          <h1 className="products-title">
+          <h1>
             All <span className="text-gold">Products</span>
           </h1>
-          <p className="products-subtitle">
+          <p>
             {searchQuery
               ? `Search results for "${searchQuery}"`
-              : "Discover our premium collection"}
+              : "Discover our collection"}
           </p>
         </div>
       </section>
 
+      {/* CONTENT */}
       <section className="products-content">
         <div className="container">
           <div className="row">
             {/* SIDEBAR */}
-            <div className="col-lg-3 col-md-4 mb-4">
+            <div className="col-lg-3">
               <Sidebar
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
               />
 
-              {/* PRICE FILTER */}
-              <div className="sidebar-card mt-3">
-                <div className="sidebar-banner">
-                  <h6 className="sidebar-title mb-0">
-                    <i className="fas fa-tag me-2"></i>Price Range
-                  </h6>
-                </div>
-
-                <div className="p-3">
-                  <div className="d-flex gap-2 mb-2">
-                    <input
-                      type="number"
-                      name="min"
-                      className="form-control form-control-sm"
-                      placeholder="Min ₱"
-                      value={priceRange.min}
-                      onChange={handlePriceChange}
-                    />
-                    <input
-                      type="number"
-                      name="max"
-                      className="form-control form-control-sm"
-                      placeholder="Max ₱"
-                      value={priceRange.max}
-                      onChange={handlePriceChange}
-                    />
-                  </div>
-
-                  <button
-                    className="btn btn-sm btn-outline-gold w-100"
-                    onClick={applyPriceFilter}
-                  >
-                    Apply
-                  </button>
-                </div>
+              <div className="mt-3">
+                <input
+                  type="number"
+                  name="min"
+                  placeholder="Min ₱"
+                  className="form-control mb-2"
+                  value={priceRange.min}
+                  onChange={handlePriceChange}
+                />
+                <input
+                  type="number"
+                  name="max"
+                  placeholder="Max ₱"
+                  className="form-control"
+                  value={priceRange.max}
+                  onChange={handlePriceChange}
+                />
               </div>
 
               <button
                 className="btn btn-outline-secondary w-100 mt-3"
                 onClick={resetFilters}
               >
-                Reset All Filters
+                Reset Filters
               </button>
             </div>
 
             {/* PRODUCTS */}
-            <div className="col-lg-9 col-md-8">
-              {/* TOP BAR */}
-              <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div className="col-lg-9">
+              <div className="d-flex justify-content-between mb-3">
                 <input
                   className="form-control"
                   style={{ width: "200px" }}
@@ -255,39 +221,24 @@ const ProductList = () => {
                 />
 
                 <select
-                  className="form-select form-select-sm"
+                  className="form-select"
                   style={{ width: "180px" }}
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
-                  <option value="">Default</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="name-asc">Name: A-Z</option>
-                  <option value="name-desc">Name: Z-A</option>
+                  <option value="">Sort</option>
+                  <option value="price-low">Low to High</option>
+                  <option value="price-high">High to Low</option>
                 </select>
-
-                <p className="mb-0 small">
-                  {filteredProducts.length} / {products.length} products
-                </p>
               </div>
 
-              {/* GRID */}
               <div className="row">
                 {filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                  filteredProducts.map((p) => (
+                    <ProductCard key={p.id} product={p} />
                   ))
                 ) : (
-                  <div className="text-center py-5">
-                    <h4>No products found</h4>
-                    <button
-                      className="btn btn-warning mt-2"
-                      onClick={resetFilters}
-                    >
-                      Clear Filters
-                    </button>
-                  </div>
+                  <h4 className="text-center">No products found</h4>
                 )}
               </div>
             </div>
