@@ -41,7 +41,7 @@ const Home = () => {
         setError(null);
         
       
-        const API_URL = import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com";
+        const API_URL = (import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com").trim();
         const res = await fetch(`${API_URL}/api/products`);
         
         if (!res.ok) {

@@ -3,6 +3,27 @@ import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import Sidebar from "../components/Sidebar";
 
+// ✅ Optional: Fallback products if API fails (same as Home.jsx)
+import product1 from "../assets/22lr-ammo-100.jpg";
+import product7 from "../assets/Airsoft BB Pellets (0.25g – 4000 pcs).jpg";
+import product11 from "../assets/Ason Armory Branded Cap.jpg";
+import product16 from "../assets/Ear Protection Headset (Noise Reduction).jpg";
+import product20 from "../assets/Glock 17 Gen 5 (9mm Pistol).jpg";
+import product22 from "../assets/Laser Sight Attachment.jpg";
+import product28 from "../assets/SIG Sauer P320 (9mm Modular Pistol).jpg";
+import product30 from "../assets/Tactical Belt (Heavy Duty Nylon).jpg";
+
+const FALLBACK_PRODUCTS = [
+  { id: 1, name: ".22 LR Ammunition (100 rounds)", price: 700, category: "Ammunition", image: product1 },
+  { id: 2, name: "Airsoft BB Pellets (0.25g – 4000 pcs)", price: 450, category: "Airsoft", image: product7 },
+  { id: 3, name: "Ason Armory Branded Cap", price: 500, category: "Apparel", image: product11 },
+  { id: 4, name: "Ear Protection Headset (Noise Reduction)", price: 1400, category: "Tactical Gear", image: product16 },
+  { id: 5, name: "Glock 17 Gen 5 (9mm Pistol)", price: 48000, category: "Firearms", image: product20 },
+  { id: 6, name: "Laser Sight Attachment", price: 1500, category: "Accessories", image: product22 },
+  { id: 7, name: "SIG Sauer P320 (9mm Modular Pistol)", price: 52000, category: "Firearms", image: product28 },
+  { id: 8, name: "Tactical Belt (Heavy Duty Nylon)", price: 750, category: "Tactical Gear", image: product30 },
+];
+
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +33,6 @@ const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const searchQuery = searchParams.get("search")?.toLowerCase() || "";
-
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
 
   useEffect(() => {
@@ -21,7 +41,12 @@ const ProductList = () => {
         setLoading(true);
         setError(null);
 
-        const API_URL = import.meta.env.VITE_API_URL;
+        // ✅ FIX #1: Trim + fallback URL to prevent trailing spaces
+        const RAW_URL = import.meta.env.VITE_API_URL || "https://ason-armory-backend.onrender.com";
+        const API_URL = RAW_URL.trim().replace(/\/$/, ""); // Remove trailing slash + spaces
+
+        // ✅ DEBUG LOG: See exact URL being fetched
+        console.log("🔍 Fetching from:", `${API_URL}/api/products`);
 
         const res = await fetch(`${API_URL}/api/products`);
 
@@ -37,8 +62,10 @@ const ProductList = () => {
 
         setProducts(data);
       } catch (err) {
-        console.error("API Fetch Error:", err);
-        setError("Failed to load products. Server might be waking up...");
+        console.warn("⚠️ Backend not available, using fallback data:", err.message);
+        setError("Using demo data (backend not connected)");
+        // ✅ FIX #2: Fallback to demo data like Home.jsx
+        setProducts(FALLBACK_PRODUCTS);
       } finally {
         setLoading(false);
       }
@@ -139,22 +166,13 @@ const ProductList = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="error-container">
-        <div className="alert alert-danger text-center">
-          <h4>Error Loading Products</h4>
-          <p>{error}</p>
-          <button
-            className="btn btn-sm btn-outline-dark"
-            onClick={() => window.location.reload()}
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  {/* ✅ Show warning if using fallback data */}
+  {error && !loading && (
+    <div className="alert alert-warning text-center mb-3">
+      <i className="fas fa-exclamation-triangle me-2"></i>
+      {error}
+    </div>
+  )}
 
   return (
     <>
