@@ -2,42 +2,42 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 
-// ✅ Fallback product images - All 35 products
+// ✅ Product Images - EXACT filenames from your assets folder
 import product1 from "../assets/22lr-ammo-100.jpg";
-import product2 from "../assets/45acp-ammo-50.jpg";
-import product3 from "../assets/3x Magnifier Scope.jpg";
-import product4 from "../assets/5.56 NATO Rifle Ammo (20 rounds).jpg";
-import product5 from "../assets/9mm FMJ Ammunition (50 rounds).jpg";
-import product6 from "../assets/12 Gauge Shotgun Shells (25 rounds).jpg";
-import product7 from "../assets/Airsoft BB Pellets (0.25g – 4000 pcs).jpg";
-import product8 from "../assets/Airsoft Glock 17 Gas Blowback.jpg";
-import product9 from "../assets/Airsoft M4 Electric Rifle (AEG).jpg";
-import product10 from "../assets/Airsoft Sniper Rifle (Spring Powered).jpg";
-import product11 from "../assets/Ason Armory Branded Cap.jpg";
-import product12 from "../assets/Beretta 92FS (9mm Classic).jpg";
-import product13 from "../assets/Colt M4 Carbine (5.56 Rifle).jpg";
-import product14 from "../assets/Combat Knee & Elbow Pads Set.jpg";
-import product15 from "../assets/Daniel Defense V11 (5.56 Rifle).jpg";
-import product16 from "../assets/Ear Protection Headset (Noise Reduction).jpg";
-import product17 from "../assets/Face Mask Tactical Balaclava.jpg";
-import product18 from "../assets/Fingerless Tactical Gloves.jpg";
-import product19 from "../assets/Gel Blaster Tactical Rifle.jpg";
-import product20 from "../assets/Glock 17 Gen 5 (9mm Pistol).jpg";
-import product21 from "../assets/Glock 19 Gen 5 (Compact 9mm).jpg";
-import product22 from "../assets/Laser Sight Attachment.jpg";
-import product23 from "../assets/Magazine Pouch (Triple Slot).jpg";
-import product24 from "../assets/Military Tactical Backpack (40L).jpg";
-import product25 from "../assets/Range Safety Glasses.jpg";
-import product26 from "../assets/Red Dot Sight (Reflex Optic).jpg";
-import product27 from "../assets/Rifle Sling (Adjustable Tactical).jpg";
-import product28 from "../assets/SIG Sauer P320 (9mm Modular Pistol).jpg";
-import product29 from "../assets/Smith & Wesson M&P Shield (9mm).jpg";
-import product30 from "../assets/Tactical Belt (Heavy Duty Nylon).jpg";
-import product31 from "../assets/Tactical Combat Boots.jpg";
-import product32 from "../assets/Tactical Kydex Holster.jpg";
-import product33 from "../assets/Tactical Vest (Plate Carrier).jpg";
-import product34 from "../assets/Universal Gun Cleaning Kit.jpg";
-import product35 from "../assets/Weapon Flashlight (LED Tactical Light).jpg";
+import product2 from "../assets/45acp-ammo-50 copy.jpg";
+import product3 from "../assets/3x Magnifier Scope copy.jpg";
+import product4 from "../assets/5.56 NATO Rifle Ammo (20 rounds) copy.jpg";
+import product5 from "../assets/9mm FMJ Ammunition (50 rounds) copy.jpg";
+import product6 from "../assets/12 Gauge Shotgun Shells (25 rounds) copy.jpg";
+import product7 from "../assets/Airsoft BB Pellets (0.25g – 4000 pcs) copy.jpg";
+import product8 from "../assets/Airsoft Glock 17 Gas Blowback .jpg";
+import product9 from "../assets/Airsoft M4 Electric Rifle (AEG) copy.jpg";
+import product10 from "../assets/Airsoft Sniper Rifle (Spring Powered) copy.jpg";
+import product11 from "../assets/Ason Armory Branded Cap copy.jpg";
+import product12 from "../assets/Beretta 92FS (9mm Classic) copy.jpg";
+import product13 from "../assets/Colt M4 Carbine (5.56 Rifle) copy.jpg";
+import product14 from "../assets/Combat Knee & Elbow Pads Set copy.jpg";
+import product15 from "../assets/Daniel Defense V11 (5.56 Rifle) copy.jpg";
+import product16 from "../assets/Ear Protection Headset (Noise Reduction) copy.jpg";
+import product17 from "../assets/Face Mask Tactical Balaclava copy.jpg";
+import product18 from "../assets/Fingerless Tactical Gloves copy.jpg";
+import product19 from "../assets/Gel Blaster Tactical Rifle copy.jpg";
+import product20 from "../assets/Glock 17 Gen 5 (9mm Pistol) copy.jpg";
+import product21 from "../assets/Glock 19 Gen 5 (Compact 9mm) copy.jpg";
+import product22 from "../assets/Laser Sight Attachment copy.jpg";
+import product23 from "../assets/Magazine Pouch (Triple Slot) copy.jpg";
+import product24 from "../assets/Military Tactical Backpack (40L) copy.jpg";
+import product25 from "../assets/Range Safety Glasses copy.jpg";
+import product26 from "../assets/Red Dot Sight (Reflex Optic) copy.jpg";
+import product27 from "../assets/Rifle Sling (Adjustable Tactical) copy.jpg";
+import product28 from "../assets/SIG Sauer P320 (9mm Modular Pistol) copy.jpg";
+import product29 from "../assets/Smith & Wesson M&P Shield (9mm) copy.jpg";
+import product30 from "../assets/Tactical Belt (Heavy Duty Nylon) copy.jpg";
+import product31 from "../assets/Tactical Combat Boots copy.jpg";
+import product32 from "../assets/Tactical Kydex Holster copy.jpg";
+import product33 from "../assets/Tactical Vest (Plate Carrier) copy.jpg";
+import product34 from "../assets/Universal Gun Cleaning Kit copy.jpg";
+import product35 from "../assets/Weapon Flashlight (LED Tactical Light) copy.jpg";
 
 const FALLBACK_PRODUCTS = [
   // 🔫 Firearms (8)
@@ -205,7 +205,6 @@ const ProductList = () => {
       <section className="products-content">
         <div className="container">
           <div className="row">
-            {/* Sidebar Filters - Inline (not using Sidebar component) */}
             <div className="col-lg-3">
               <div className="filters-sidebar">
                 <h3 className="filters-title">Filters</h3>
@@ -251,7 +250,6 @@ const ProductList = () => {
               </div>
             </div>
 
-            {/* Products Grid */}
             <div className="col-lg-9">
               <div className="products-toolbar">
                 <div className="search-box">
